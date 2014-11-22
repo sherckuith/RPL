@@ -7,7 +7,7 @@ using namespace std;
 using namespace cv;
 
 int main(int argc, char * argv[]){
-    Mat Im = imread("image000012.bmp");
+    Mat Im = imread("00.bmp");
     namedWindow("Original",WINDOW_AUTOSIZE);
     imshow("Original",Im);
 
