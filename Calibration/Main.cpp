@@ -7,13 +7,13 @@ using namespace std;
 using namespace cv;
 
 int main(int argc, char * argv[]){
+    bool FLAG = true;
     Mat Im;
     if (argc == 1){
         Im = imread("00.bmp");
     }    else{
         Im = imread(argv[1]);
     }
-
 
     // Canny del tiron
     Mat Im_Edges;
@@ -121,7 +121,6 @@ int main(int argc, char * argv[]){
                 }
             }
 
-
         }
         if (abs(DIST-Distt[0][2])<20 || abs(DIST-Distt[1][2])<20){
             Used[WHOF]=true;
@@ -135,7 +134,8 @@ int main(int argc, char * argv[]){
                 Y0 = min(corners[WHO].y,corners[WHOF].y);
                 XF = max(corners[WHO].x,corners[WHOF].x);
                 YF = max(corners[WHO].y,corners[WHOF].y);
-                rectangle(Im_Edges_Rot_Corn,Rect(X0,Y0,XF-X0,YF-Y0),Scalar(0,0,255),2);
+                //rectangle(Im_Edges_Rot_Corn,Rect(X0,Y0,XF-X0,YF-Y0),Scalar(0,0,255),2);
+                rectangle(Im_Edges_Rot_Corn,corners[WHO],corners[WHOF],Scalar(0,0,255),2);
                 Used[WHOF]=true;
                 Used[WHO]=true;
             }else{
@@ -161,6 +161,68 @@ int main(int argc, char * argv[]){
     k++;
     }
 
+    //I assume that the second square is the good one.
+    // So that I
+    X0 = min(corners[Distt[1][0]].x,corners[Distt[1][1]].x);
+    Y0 = min(corners[Distt[1][0]].y,corners[Distt[1][1]].y);
+    XF = max(corners[Distt[1][0]].x,corners[Distt[1][1]].x);
+    YF = max(corners[Distt[1][0]].y,corners[Distt[1][1]].y);
+    Rect rec(X0+5,Y0+5,XF-X0-10,YF-Y0-10);
+    Mat Mask = Im_BW+255;
+    Mask(rec)=1;
+    if(FLAG==true){
+        namedWindow("Mask");
+        imshow("Mask",Mask);
+    }
+    Mat Im_Crop;
+    multiply(Im_BW,Mask,Im_Crop);
+    if (FLAG == true){
+        namedWindow("Image Cropped");
+        imshow("Image Cropped",Im_Crop);
+    }
+
+    //Threshold nuevos
+    Mat Im_Crop_Thres,Temp;
+
+    threshold(Im_Crop,Im_Crop_Thres,190,255,THRESH_BINARY);
+    Mat Im_Crop_Thres_Invert;
+    if (FLAG==true){
+        namedWindow("Image Cropped and Threshold");
+        Temp = Im_Crop_Thres+255;
+        subtract(Temp,Im_Crop_Thres,Im_Crop_Thres_Invert);
+        imshow("Image Cropped and Threshold",Im_Crop_Thres_Invert);
+    }
+
+
+
+    //Características
+    float Factor = 0;
+    Factor = 20/(float)abs(YF-Y0);
+    cout << "20 cm y "<<abs(YF-Y0)<<" cm. Factor" << Factor << endl;
+
+    double AREA = 0;
+    for (int i = 0;i<Im_Crop_Thres_Invert.rows;i++){
+        for (int j = 0;j<Im_Crop_Thres_Invert.cols;j++){
+            if (Im_Crop_Thres_Invert.at<uchar>(i,j)>30)
+            AREA =AREA+ 1;
+        }
+    }
+    cout << "Area = " << AREA*Factor*Factor << endl;
+
+    float PERIM = 0;
+    Mat Im_Crop_Thres_Invert_Edge;
+    Canny(Im_Crop_Thres_Invert,Im_Crop_Thres_Invert_Edge,100,150);
+    if (FLAG == true){
+        namedWindow("Canny Invert");
+        imshow("Canny Invert",Im_Crop_Thres_Invert_Edge);
+    }
+    for (int i = 0;i<Im_Crop_Thres_Invert.rows;i++){
+        for (int j = 0;j<Im_Crop_Thres_Invert.cols;j++){
+            if (Im_Crop_Thres_Invert_Edge.at<uchar>(i,j)>200)
+            PERIM =PERIM+ 1;
+        }
+    }
+    cout << "Perim = " << PERIM*Factor << endl;
 
 
     while((char)waitKey(1)!='q'){}
