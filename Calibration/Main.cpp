@@ -24,6 +24,7 @@ int main(int argc, char * argv[]){
 
     namedWindow("00 Edge",WINDOW_AUTOSIZE);
     imshow("00 Edge",Im_Edges);
+    imwrite("Edge.bmp",Im_Edges);
 
     // HoughLines()
     vector<Vec2f> Lines;
@@ -42,7 +43,7 @@ int main(int argc, char * argv[]){
         line(img_show, pt1, pt2, Scalar(0, 0, 255));
     namedWindow("01 Shapes");
     imshow("01 Shapes", img_show);
-
+    imwrite("Shapes.bmp",img_show);
 
 
 
@@ -62,7 +63,7 @@ int main(int argc, char * argv[]){
     warpAffine(Im,Im_Rot,rot_mat,Im.size(),INTER_LINEAR,BORDER_CONSTANT,Im.at<Vec3b>(0,0));
     namedWindow("02 Edges Rotated",WINDOW_AUTOSIZE);
     imshow("02 Edges Rotated", Im_Rot);
-
+    imwrite("02 Edges Rotated.bmp",Im_Rot);
 
 
 
@@ -93,6 +94,7 @@ int main(int argc, char * argv[]){
         imshow("03 Piquitos", Im_BW_Corn);
         //while((char)waitKey(1)!='n'){}
     }
+    imwrite("03 Piquitos.bmp",Im_BW_Corn);
 
     //Draw the corners as little circles
     vector<bool>Used(11);
@@ -167,19 +169,22 @@ int main(int argc, char * argv[]){
         }
     k++;
     }
+    imwrite("Corners.bmp",Im_Edges_Rot_Corn);
     int index = 0;
     if (Distt[1][2]!=-99)
-        index = 1;
+        index = 0;
 
     //I assume that the second square is the good one.
     // So that I
-    X0 = min(corners[Distt[index][0]].x,corners[Distt[index][1]].x);
-    Y0 = min(corners[Distt[index][0]].y,corners[Distt[index][1]].y);
-    XF = max(corners[Distt[index][0]].x,corners[Distt[index][1]].x);
-    YF = max(corners[Distt[index][0]].y,corners[Distt[index][1]].y);
+    X0 = min(corners_for_use[Distt[index][0]].x,corners_for_use[Distt[index][1]].x);
+    Y0 = min(corners_for_use[Distt[index][0]].y,corners_for_use[Distt[index][1]].y);
+    XF = max(corners_for_use[Distt[index][0]].x,corners_for_use[Distt[index][1]].x);
+    YF = max(corners_for_use[Distt[index][0]].y,corners_for_use[Distt[index][1]].y);
     Rect rec(X0+5,Y0+5,XF-X0-10,YF-Y0-10);
+    cout <<"X0 = "<<X0<<" XF = "<<XF<<" Y0 = "<<Y0<<" YF = "<<YF<<endl;
     Mat Mask = Im_BW+255;
     Mask(rec)=1;
+    cout <<"X0 = "<<X0<<" XF = "<<XF<<" Y0 = "<<Y0<<" YF = "<<YF<<endl;
     if(FLAG==true){
         namedWindow("Mask");
         imshow("Mask",Mask);
@@ -189,9 +194,10 @@ int main(int argc, char * argv[]){
     if (FLAG == true){
         namedWindow("Image Cropped");
         imshow("Image Cropped",Im_Crop);
+        imwrite("Image Cropped.bmp",Im_Crop);
     }
 
-    /*
+
     //Threshold nuevos
     Mat Im_Crop_Thres,Temp;
 
@@ -202,14 +208,15 @@ int main(int argc, char * argv[]){
         Temp = Im_Crop_Thres+255;
         subtract(Temp,Im_Crop_Thres,Im_Crop_Thres_Invert);
         imshow("Image Cropped and Threshold",Im_Crop_Thres_Invert);
+        imwrite("Image Cropped and Threshold.bmp",Im_Crop_Thres_Invert);
     }
 
 
 
     //Características
     float Factor = 0;
-    Factor = 20/(float)abs(YF-Y0);
-    cout << "20 cm y "<<abs(YF-Y0)<<" cm. Factor" << Factor << endl;
+    Factor = 15/(float)abs(YF-Y0);
+    cout << "15 cm y "<<abs(YF-Y0)<<" cm. Factor" << Factor << endl;
 
     double AREA = 0;
     for (int i = 0;i<Im_Crop_Thres_Invert.rows;i++){
@@ -222,10 +229,11 @@ int main(int argc, char * argv[]){
 
     float PERIM = 0;
     Mat Im_Crop_Thres_Invert_Edge;
-    Canny(Im_Crop_Thres_Invert,Im_Crop_Thres_Invert_Edge,100,150);
+    Canny(Im_Crop_Thres_Invert,Im_Crop_Thres_Invert_Edge,80,150);
     if (FLAG == true){
         namedWindow("Canny Invert");
         imshow("Canny Invert",Im_Crop_Thres_Invert_Edge);
+        imwrite("Canny Cropped and Threshold.bmp",Im_Crop_Thres_Invert_Edge);
     }
     for (int i = 0;i<Im_Crop_Thres_Invert.rows;i++){
         for (int j = 0;j<Im_Crop_Thres_Invert.cols;j++){
@@ -234,7 +242,7 @@ int main(int argc, char * argv[]){
         }
     }
     cout << "Perim = " << PERIM*Factor << endl;
-*/
+
 
     while((char)waitKey(1)!='q'){}
 }
